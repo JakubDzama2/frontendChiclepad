@@ -4,9 +4,8 @@ import org.chiclepad.backend.Dao.DaoFactory;
 import org.chiclepad.backend.Dao.NoteDao;
 import org.chiclepad.backend.entity.Note;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import rest.exceptions.NoteNotFoundException;
@@ -39,13 +38,23 @@ public class NoteController {
         }
     */
 
-    @RequestMapping("/notes/userId/{id}")
+    @RequestMapping("/loggedInUserId/{userId}/notes")
     public List<Note> getAllNotesByUserId(@PathVariable int userId) {
         return noteDao.getAll(userId);
     }
 
-    @RequestMapping("/notes/{id}")
+    @RequestMapping("/loggedInUserId/{userId}/notes/{id}")
     public Note getNoteById(@PathVariable int id) {
         return noteDao.get(id);
+    }
+
+    @RequestMapping(value = "/loggedInUserId/{userId}/notes", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createNote(@PathVariable int userId, @RequestBody Note note) {
+        if (note.getReminderTime() == null) {
+            noteDao.create(userId, note.getContent());
+        } else {
+            noteDao.create(userId, note.getContent(), note.getReminderTime().get());
+        }
     }
 }
